@@ -5,8 +5,10 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Customer } from 'src/modules/customers/entities/customer.entity';
+import { Order } from 'src/modules/orders/entities/order.entity';
 
 export enum AddressType {
   ENTREGA = 'entrega',
@@ -50,6 +52,9 @@ export class Address {
     enum: AddressType,
   })
   type: AddressType;
+
+  @OneToMany(() => Order, (order) => order.address)
+  orders: Order[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

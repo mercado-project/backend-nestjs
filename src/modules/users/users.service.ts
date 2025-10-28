@@ -24,7 +24,7 @@ export class UsersService {
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['customer'], // se tiver FK
+      relations: ['customer'],
     });
 
     if (!user) {

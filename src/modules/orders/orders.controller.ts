@@ -1,34 +1,79 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { CreateOrderItemDto } from './dto/create-order-item.dto';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  /**
+   * Cria um novo pedido com seus itens
+   * Exemplo de body esperado:
+   * {
+   *   "order": {
+   *     "customerId": 1,
+   *     "deliveryAddressId": 2,
+   *     "paymentMethod": "pix",
+   *     "status": "pending"
+   *   },
+   *   "items": [
+   *     { "productId": 3, "quantity": 2 },
+   *     { "productId": 4, "quantity": 1 }
+   *   ]
+   * }
+   */
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  async create(
+    @Body('order') createOrderDto: CreateOrderDto,
+    @Body('items') items: CreateOrderItemDto[],
+  ) {
+    return this.ordersService.create(createOrderDto, items);
   }
 
+  /**
+   * Lista pedidos com paginação e busca opcional
+   * /orders?page=1&limit=10&search=joao&status=pending
+   */
   @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+    @Query('status') status?: string,
+  ) {
+    // pagination and filtering handled manually in service
+    const result = await this.ordersService.findAllWithPagination({
+      page: +page,
+      limit: +limit,
+      search,
+      status,
+    });
+    return result;
   }
 
+  /**
+   * Retorna um pedido específico
+   */
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.ordersService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(+id, updateOrderDto);
-  }
-
+  /**
+   * Exclui um pedido
+   */
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return this.ordersService.remove(id);
   }
 }

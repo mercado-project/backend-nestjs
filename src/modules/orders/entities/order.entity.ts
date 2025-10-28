@@ -19,9 +19,9 @@ export class Order {
   @JoinColumn({ name: 'customer_id' })
   customer: Customer;
 
-  @ManyToOne(() => Address, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Address, (address) => address.orders, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'delivery_address_id' })
-  deliveryAddress: Address;
+  address: Address;
 
   @Column({ type: 'datetime', name: 'order_date' })
   orderDate: Date;
