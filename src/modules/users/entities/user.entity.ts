@@ -2,7 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
@@ -17,10 +17,6 @@ export enum UserRole {
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @ManyToOne(() => Customer, (customer) => customer.users, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'customer_id' })
-  customer?: Customer;
 
   @Column({ type: 'varchar', length: 100, unique: true })
   email: string;
@@ -37,5 +33,14 @@ export class User {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @OneToOne(() => Customer, (customer) => customer.user, {
+    cascade: true,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'customer_id' })
+  customer?: Customer;
 }
+
 

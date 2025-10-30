@@ -23,7 +23,7 @@ export class Order {
   @JoinColumn({ name: 'delivery_address_id' })
   address: Address;
 
-  @Column({ type: 'datetime', name: 'order_date' })
+  @Column({ type: 'timestamp', name: 'order_date' })
   orderDate: Date;
 
   @Column('decimal', { precision: 10, scale: 2, name: 'total_amount' })

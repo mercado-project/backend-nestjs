@@ -19,10 +19,10 @@ export class Promotion {
   @Column('decimal', { precision: 10, scale: 2 })
   promotionalPrice: number;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   startAt: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   endAt: Date;
 
   @Column()

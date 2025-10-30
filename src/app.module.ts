@@ -14,6 +14,7 @@ import { CmsModule } from './modules/cms/cms.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { AddressesModule } from './modules/addresses/addresses.module';
 import { CartsModule } from './modules/carts/carts.module';
+import { AuthModule } from './auth/auth.module';
 
 // Configuração principal do banco
 @Module({
@@ -41,6 +42,7 @@ import { CartsModule } from './modules/carts/carts.module';
     UsersModule,
     CmsModule,
     CategoriesModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
