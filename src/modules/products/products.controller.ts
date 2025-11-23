@@ -22,6 +22,11 @@ export class ProductsController {
     return this.productsService.findOne(+id);
   }
 
+  @Get('url/:url')
+  async getByUrl(@Param('url') url: string) {
+    return this.productsService.findByUrl(url);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productsService.update(+id, updateProductDto);

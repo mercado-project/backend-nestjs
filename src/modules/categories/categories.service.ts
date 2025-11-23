@@ -36,6 +36,13 @@ export class CategoriesService {
     return category;
   }
 
+    async findMenuCategories() {
+    return this.categoryRepository.find({
+      where: { showInMenu: true },
+      relations: ['children']
+    });
+  }
+
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
     const category = await this.findOne(id);
 

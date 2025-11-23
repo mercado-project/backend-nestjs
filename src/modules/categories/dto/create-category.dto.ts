@@ -22,6 +22,10 @@ export class CreateCategoryDto {
   @IsBoolean()
   active?: boolean;
 
+  @IsOptional()
+  @IsBoolean()
+  showInMenu?: boolean;
+
   @IsString()
   @IsNotEmpty()
   @Length(3, 150)

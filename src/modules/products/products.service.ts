@@ -86,6 +86,19 @@ export class ProductsService {
     return product;
   }
 
+  async findByUrl(url: string): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { url },
+      relations: ['category', 'images', 'prices', 'promotions', 'stocks'],
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with URL '${url}' not found`);
+    }
+
+    return product;
+  }
+
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
 

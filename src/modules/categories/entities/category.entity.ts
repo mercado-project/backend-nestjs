@@ -30,6 +30,9 @@ export class Category {
   @Column({ type: 'int', default: 0 })
   level: number;
 
+  @Column({ default: true })
+  showInMenu: boolean;
+
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
