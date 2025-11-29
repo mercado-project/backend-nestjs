@@ -67,8 +67,10 @@ export class ProductsService {
     return await this.productRepository.save(product);
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(limit?: number): Promise<Product[]> {
     return await this.productRepository.find({
+      take: limit, // undefined = pega tudo
+      order: { createdAt: 'DESC' },
       relations: ['category', 'images', 'prices', 'promotions', 'stocks'],
     });
   }

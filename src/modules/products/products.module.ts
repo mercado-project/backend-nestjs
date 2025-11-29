@@ -8,6 +8,7 @@ import { Category } from 'src/modules/categories/entities/category.entity';
 import { Price } from 'src/modules/prices/entities/price.entity';
 import { Promotion } from 'src/modules/promotions/entities/promotion.entity';
 import { Stock } from 'src/modules/stock/entities/stock.entity';
+import { ProductImagesService } from './product-images.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { Stock } from 'src/modules/stock/entities/stock.entity';
     ]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService],
-  exports: [ProductsService],
+  providers: [ProductsService, ProductImagesService],
+  exports: [ProductsService, ProductImagesService],
 })
 export class ProductsModule {}
