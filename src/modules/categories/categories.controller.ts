@@ -27,6 +27,11 @@ export class CategoriesController {
     return this.categoriesService.findOne(+id);
   }
 
+  @Get('url/:url')
+  async getByUrl(@Param('url') url: string) {
+    return this.categoriesService.findByUrl(url);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     return this.categoriesService.update(+id, updateCategoryDto);

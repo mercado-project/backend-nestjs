@@ -35,6 +35,11 @@ export class ProductsController {
     return this.productsService.findByUrl(url);
   }
 
+  @Get('category/:categoryId')
+  async findByCategory(@Param('categoryId') categoryId: string) {
+    return await this.productsService.findByCategory(Number(categoryId));
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productsService.update(+id, updateProductDto);

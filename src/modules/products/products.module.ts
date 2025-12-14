@@ -9,6 +9,7 @@ import { Price } from 'src/modules/prices/entities/price.entity';
 import { Promotion } from 'src/modules/promotions/entities/promotion.entity';
 import { Stock } from 'src/modules/stock/entities/stock.entity';
 import { ProductImagesService } from './product-images.service';
+import { CategoriesService } from '../categories/categories.service'
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { ProductImagesService } from './product-images.service';
     ]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService, ProductImagesService],
-  exports: [ProductsService, ProductImagesService],
+  providers: [ProductsService, ProductImagesService, CategoriesService],
+  exports: [ProductsService, ProductImagesService, CategoriesService],
 })
 export class ProductsModule {}

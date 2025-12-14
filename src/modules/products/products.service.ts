@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { In } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { Category } from 'src/modules/categories/entities/category.entity';
 import { ProductImage } from './entities/product-image.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CategoriesService } from '../categories/categories.service'
 
 @Injectable()
 export class ProductsService {
@@ -18,6 +20,8 @@ export class ProductsService {
 
     @InjectRepository(ProductImage)
     private readonly imageRepository: Repository<ProductImage>,
+
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -125,4 +129,26 @@ export class ProductsService {
     const product = await this.findOne(id);
     await this.productRepository.remove(product);
   }
+
+  async findByCategory(categoryId: number): Promise<Product[]> {
+    // Verifica se a categoria existe
+    const category = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+    }
+
+    // Busca IDs de todas as subcategorias recursivamente
+    const categoryIds = await this.categoriesService.getAllDescendantCategoryIds(categoryId);
+
+    // Busca produtos pertencentes a qualquer uma dessas categorias
+    return await this.productRepository.find({
+      where: { category: { id: In(categoryIds) } },
+      relations: ['category', 'images', 'prices', 'promotions', 'stocks'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
 }
