@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe  } from '@nestjs/common';
 import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -20,6 +20,13 @@ export class AddressesController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.addressesService.findOne(+id);
+  }
+
+  @Get('customer/:customerId')
+  findByCustomer(
+    @Param('customerId', ParseIntPipe) customerId: number,
+  ) {
+    return this.addressesService.findByCustomerId(customerId);
   }
 
   @Patch(':id')

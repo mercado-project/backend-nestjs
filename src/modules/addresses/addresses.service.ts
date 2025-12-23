@@ -68,4 +68,25 @@ export class AddressesService {
     const address = await this.findOne(id);
     await this.addressRepository.remove(address);
   }
+
+  async findByCustomerId(customerId: number): Promise<Address[]> {
+    const addresses = await this.addressRepository.find({
+      where: {
+        customer: { id: customerId },
+      },
+      relations: ['customer'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    if (!addresses.length) {
+      throw new NotFoundException(
+        `No addresses found for customer ID ${customerId}`,
+      );
+    }
+
+    return addresses;
+  }
+
 }
