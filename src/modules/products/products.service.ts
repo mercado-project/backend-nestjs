@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { In } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { Category } from 'src/modules/categories/entities/category.entity';
 import { ProductImage } from './entities/product-image.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { CategoriesService } from '../categories/categories.service'
+import { Repository, In, ILike } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -147,6 +146,24 @@ export class ProductsService {
     return await this.productRepository.find({
       where: { category: { id: In(categoryIds) } },
       relations: ['category', 'images', 'prices', 'promotions', 'stocks'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async search(term: string): Promise<Product[]> {
+    if (!term || term.trim().length < 2) {
+      return [];
+    }
+
+    return this.productRepository.find({
+      where: [
+        { name: ILike(`%${term}%`) },
+        { description: ILike(`%${term}%`) },
+        { sku: ILike(`%${term}%`) },
+        { brand: ILike(`%${term}%`) },
+      ],
+      relations: ['category', 'images', 'prices', 'promotions', 'stocks'],
+      take: 50,
       order: { createdAt: 'DESC' },
     });
   }

@@ -11,6 +11,10 @@ export class CreateOrderDto {
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
+  shippingFee: number;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsNotEmpty()
   totalAmount: number;
 
   @IsEnum(['pending', 'paid', 'shipped', 'delivered', 'canceled'])

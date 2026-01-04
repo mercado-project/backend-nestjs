@@ -10,6 +10,7 @@ import { Promotion } from 'src/modules/promotions/entities/promotion.entity';
 import { Stock } from 'src/modules/stock/entities/stock.entity';
 import { ProductImagesService } from './product-images.service';
 import { CategoriesService } from '../categories/categories.service'
+import { RedisModule } from 'src/shared/redis/redis.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CategoriesService } from '../categories/categories.service'
       Promotion,
       Stock,
     ]),
+    RedisModule
   ],
   controllers: [ProductsController],
   providers: [ProductsService, ProductImagesService, CategoriesService],

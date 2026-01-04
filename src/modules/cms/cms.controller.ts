@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CmsService } from './cms.service';
 import { CreateCmsDto } from './dto/create-cms.dto';
 import { UpdateCmsDto } from './dto/update-cms.dto';
+import { CreateBannerDto } from './dto/create-banner.dto';
+import { UpdateBannerDto } from './dto/update-banner.dto';
 
 @Controller('cms')
 export class CmsController {
@@ -31,4 +33,40 @@ export class CmsController {
   remove(@Param('id') id: string) {
     return this.cmsService.remove(+id);
   }
+
+
+ // ============ BANNERS ============
+  @Post('banners')
+  createBanner(@Body() dto: CreateBannerDto) {
+    return this.cmsService.createBanner(dto);
+  }
+
+  @Get('banners')
+  findAllBanners() {
+    return this.cmsService.findAllBanners();
+  }
+
+  @Get('banners/active')
+  findActiveBanners() {
+    return this.cmsService.findActiveBanners();
+  }
+
+  @Get('banners/:id')
+  findBanner(@Param('id') id: string) {
+    return this.cmsService.findBannerById(+id);
+  }
+
+  @Patch('banners/:id')
+  updateBanner(
+    @Param('id') id: string,
+    @Body() dto: UpdateBannerDto,
+  ) {
+    return this.cmsService.updateBanner(+id, dto);
+  }
+
+  @Delete('banners/:id')
+  removeBanner(@Param('id') id: string) {
+    return this.cmsService.removeBanner(+id);
+  }
+
 }

@@ -42,6 +42,14 @@ export class Order {
   })
   paymentMethod: string;
 
+  @Column('decimal', {
+  precision: 10,
+    scale: 2,
+    name: 'shipping_fee',
+    default: 0,
+  })
+  shippingFee: number;
+
   @OneToMany(() => OrderItem, (item) => item.order)
   items: OrderItem[];
 }

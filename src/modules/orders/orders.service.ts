@@ -50,7 +50,7 @@ export class OrdersService {
     createOrderDto: CreateOrderDto,
     items: CreateOrderItemDto[],
   ): Promise<Order> {
-    const { customerId, deliveryAddressId, paymentMethod, status } = createOrderDto;
+    const { customerId, deliveryAddressId, paymentMethod, status, shippingFee } = createOrderDto;
 
     // Valida cliente
     const customer = await this.customerRepository.findOne({
@@ -82,6 +82,7 @@ export class OrdersService {
       totalAmount: 0, // será calculado pelos itens abaixo
       paymentMethod,
       status,
+      shippingFee
     });
 
     const savedOrder = await this.orderRepository.save(order);
@@ -92,12 +93,12 @@ export class OrdersService {
 
     for (const item of items) {
       const product = await this.productRepository.findOne({
-        where: { id: item.productId },
+        where: { id: item.product },
       });
 
       if (!product) {
         throw new NotFoundException(
-          `Produto com ID ${item.productId} não encontrado`,
+          `Produto com ID ${item.product} não encontrado`,
         );
       }
 
@@ -200,4 +201,42 @@ export class OrdersService {
     await this.orderRepository.remove(order);
     return { message: `Pedido ${id} removido com sucesso` };
   }
+
+
+  async findByCustomerId(customerId: number): Promise<Order[]> {
+    // valida se o cliente existe (boa prática)
+    const customer = await this.customerRepository.findOne({
+      where: { id: customerId },
+    });
+
+    if (!customer) {
+      throw new NotFoundException(
+        `Cliente com ID ${customerId} não encontrado`,
+      );
+    }
+
+    const orders = await this.orderRepository.find({
+      where: {
+        customer: { id: customerId },
+      },
+      relations: [
+        'customer',
+        'address',
+        'items',
+        'items.product',
+      ],
+      order: {
+        orderDate: 'DESC', // mais recente primeiro
+      },
+    });
+
+    if (!orders.length) {
+      throw new NotFoundException(
+        `Nenhum pedido encontrado para o cliente ID ${customerId}`,
+      );
+    }
+
+    return orders;
+  }
+
 }

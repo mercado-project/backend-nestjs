@@ -70,6 +70,17 @@ export class OrdersController {
   }
 
   /**
+   * Lista pedidos de um cliente específico
+   * /orders/customer/1
+   */
+  @Get('customer/:customerId')
+  async findByCustomer(
+    @Param('customerId', ParseIntPipe) customerId: number,
+  ) {
+    return this.ordersService.findByCustomerId(customerId);
+  }
+
+  /**
    * Exclui um pedido
    */
   @Delete(':id')

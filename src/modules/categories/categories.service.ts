@@ -4,23 +4,46 @@ import { Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { RedisService } from 'src/shared/redis/redis.service';
 
 @Injectable()
 export class CategoriesService {
+  private readonly CACHE_KEY_ALL = 'categories:all';
+  private readonly CACHE_KEY_MENU = 'categories:menu';
+  private readonly CACHE_TTL = 60 * 30; // 30 minutos
+
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly redisService: RedisService,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const category = this.categoryRepository.create(createCategoryDto);
-    return await this.categoryRepository.save(category);
+    const saved = await this.categoryRepository.save(category);
+
+    // invalida cache
+    await this.invalidateCategoriesCache();
+
+    return saved;
   }
 
   async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.find({
-      relations: ['parent'], // se tiver relação de categoria pai
+    // 1️⃣ tenta buscar do cache
+    const cached = await this.redisService.get<Category[]>(this.CACHE_KEY_ALL);
+    if (cached) {
+      return cached;
+    }
+
+    // 2️⃣ busca do banco
+    const categories = await this.categoryRepository.find({
+      relations: ['parent'],
     });
+
+    // 3️⃣ salva no cache por 30 minutos
+    await this.redisService.set(this.CACHE_KEY_ALL, categories, this.CACHE_TTL);
+
+    return categories;
   }
 
   async findOne(id: number): Promise<Category> {
@@ -36,41 +59,101 @@ export class CategoriesService {
     return category;
   }
 
-  async findMenuCategories() {
-    return this.categoryRepository.find({
+  async findMenuCategories(): Promise<Category[]> {
+    // 1️⃣ tenta buscar do cache
+    const cached = await this.redisService.get<Category[]>(
+      this.CACHE_KEY_MENU,
+    );
+
+    if (cached) {
+      return cached;
+    }
+
+    // 2️⃣ busca do banco
+    const categories = await this.categoryRepository.find({
       where: { showInMenu: true },
-      relations: ['children']
+      relations: ['children'],
+      order: {
+        id: 'ASC', // opcional, mas ajuda na consistência
+      },
     });
+
+    // 3️⃣ salva no cache
+    await this.redisService.set(
+      this.CACHE_KEY_MENU,
+      categories,
+      this.CACHE_TTL,
+    );
+
+    return categories;
   }
 
+
   async findByUrl(url: string): Promise<Category> {
+    const cacheKey = `categories:url:${url}`;
+
+    // 1️⃣ tenta buscar do cache
+    const cached = await this.redisService.get<Category>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // 2️⃣ busca do banco
     const category = await this.categoryRepository.findOne({
       where: { url },
-      relations: ['parent'],
+      relations: ['parent', 'children'], // já deixo pronto pro front
     });
-  
+
     if (!category) {
       throw new NotFoundException(`Category with URL '${url}' not found`);
     }
-  
+
+    // 3️⃣ salva no cache
+    await this.redisService.set(cacheKey, category, this.CACHE_TTL);
+
     return category;
   }
 
+
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
     const category = await this.findOne(id);
-
     Object.assign(category, updateCategoryDto);
 
-    return await this.categoryRepository.save(category);
+    const updated = await this.categoryRepository.save(category);
+
+    // invalida cache
+    await this.invalidateCategoriesCache();
+
+    return updated;
   }
 
   async remove(id: number): Promise<void> {
     const category = await this.findOne(id);
     await this.categoryRepository.remove(category);
+
+    // invalida cache
+    await this.invalidateCategoriesCache();
+  }
+
+
+  private async invalidateCategoriesCache() {
+    await Promise.all([
+      this.redisService.del(this.CACHE_KEY_ALL),
+      this.redisService.del(this.CACHE_KEY_MENU),
+    ]);
   }
 
 
   async getAllDescendantCategoryIds(parentId: number): Promise<number[]> {
+    const cacheKey = `categories:descendants:${parentId}`;
+
+    // 1️⃣ tenta cache
+    const cached = await this.redisService.get<number[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // 2️⃣ lógica atual (DFS)
     const stack = [parentId];
     const allIds = [parentId];
 
@@ -79,6 +162,7 @@ export class CategoriesService {
 
       const children = await this.categoryRepository.find({
         where: { parent: { id: currentId } },
+        select: ['id'], // 🚀 performance
       });
 
       for (const child of children) {
@@ -86,6 +170,13 @@ export class CategoriesService {
         stack.push(child.id);
       }
     }
+
+    // 3️⃣ salva no cache
+    await this.redisService.set(
+      cacheKey,
+      allIds,
+      this.CACHE_TTL, // 30 min
+    );
 
     return allIds;
   }

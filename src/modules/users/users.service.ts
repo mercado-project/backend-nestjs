@@ -18,7 +18,9 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+        return await this.userRepository.find({
+      relations: ['customer'], // se tiver relação de categoria pai
+    });
   }
 
   async findOne(id: number): Promise<User> {

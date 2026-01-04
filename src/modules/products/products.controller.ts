@@ -17,6 +17,11 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
+  @Get('search')
+  search(@Query("w") w: string) {
+    return this.productsService.search(w);
+  }
+
   @Get()
   async findAll(
   @Query('limit') limit?: string,

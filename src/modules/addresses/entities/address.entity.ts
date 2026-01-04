@@ -50,6 +50,7 @@ export class Address {
   @Column({
     type: 'enum',
     enum: AddressType,
+    default: AddressType.ENTREGA,
   })
   type: AddressType;
 
