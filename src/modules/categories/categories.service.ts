@@ -5,6 +5,7 @@ import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { RedisService } from 'src/shared/redis/redis.service';
+import { ConflictException } from '@nestjs/common';
 
 @Injectable()
 export class CategoriesService {
@@ -117,6 +118,20 @@ export class CategoriesService {
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
     const category = await this.findOne(id);
+
+    // 🔍 valida URL única (ignorando o próprio registro)
+    if (updateCategoryDto.url) {
+      const existing = await this.categoryRepository.findOne({
+        where: { url: updateCategoryDto.url },
+      });
+
+      if (existing && existing.id !== id) {
+        throw new ConflictException(
+          'Já existe uma categoria com essa URL'
+        );
+      }
+    }
+
     Object.assign(category, updateCategoryDto);
 
     const updated = await this.categoryRepository.save(category);

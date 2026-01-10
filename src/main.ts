@@ -5,10 +5,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3000', // seu Next.js
-    methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
-  });
+  })
 
   await app.listen(process.env.PORT ?? 3002);
 }
