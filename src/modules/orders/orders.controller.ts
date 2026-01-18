@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   Delete,
+  Patch,
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -78,6 +79,19 @@ export class OrdersController {
     @Param('customerId', ParseIntPipe) customerId: number,
   ) {
     return this.ordersService.findByCustomerId(customerId);
+  }
+
+  /**
+   * Atualiza o status de um pedido
+   * PATCH /orders/:id
+   * Body: { "status": "paid" }
+   */
+  @Patch(':id')
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: string,
+  ) {
+    return this.ordersService.updateStatus(id, status);
   }
 
   /**

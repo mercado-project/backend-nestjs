@@ -107,6 +107,45 @@ export class ProductsService {
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
 
+
+      /* -------------------- */
+      /* Validate SKU unique  */
+      /* -------------------- */
+      if (
+        updateProductDto.sku &&
+        updateProductDto.sku !== product.sku
+      ) {
+        const skuExists = await this.productRepository.findOne({
+          where: { sku: updateProductDto.sku },
+        });
+
+        if (skuExists && skuExists.id !== product.id) {
+          throw new BadRequestException(
+            `SKU '${updateProductDto.sku}' já está em uso`
+          );
+        }
+      }
+
+      /* -------------------- */
+      /* Validate URL unique  */
+      /* -------------------- */
+      if (
+        updateProductDto.url &&
+        updateProductDto.url !== product.url
+      ) {
+        const urlExists = await this.productRepository.findOne({
+          where: { url: updateProductDto.url },
+        });
+
+        if (urlExists && urlExists.id !== product.id) {
+          throw new BadRequestException(
+            `URL '${updateProductDto.url}' já está em uso`
+          );
+        }
+      }
+
+
+
     if (updateProductDto.categoryId) {
       const category = await this.categoryRepository.findOne({
         where: { id: updateProductDto.categoryId },

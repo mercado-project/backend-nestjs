@@ -194,6 +194,27 @@ export class OrdersService {
   }
 
   /**
+   * Atualiza o status de um pedido
+   */
+  async updateStatus(id: number, status: string): Promise<Order> {
+    const order = await this.findOne(id);
+    
+    // Valida se o status é válido
+    const validStatuses = ['pending', 'paid', 'shipped', 'delivered', 'canceled'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(
+        `Status inválido. Status válidos: ${validStatuses.join(', ')}`,
+      );
+    }
+
+    order.status = status;
+    const updatedOrder = await this.orderRepository.save(order);
+
+    // Retorna o pedido completo com relacionamentos
+    return this.findOne(id);
+  }
+
+  /**
    * Remove um pedido
    */
   async remove(id: number): Promise<{ message: string }> {

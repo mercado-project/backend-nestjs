@@ -9,6 +9,43 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 export class CmsController {
   constructor(private readonly cmsService: CmsService) {}
 
+  // ========= BANNERS (SEMPRE PRIMEIRO) =========
+
+  @Post('banners')
+  createBanner(@Body() dto: CreateBannerDto) {
+    return this.cmsService.createBanner(dto);
+  }
+
+  @Get('banners')
+  findAllBanners() {
+    return this.cmsService.findAllBanners();
+  }
+
+  @Get('banners/active')
+  findActiveBanners() {
+    return this.cmsService.findActiveBanners();
+  }
+
+  @Get('banners/:id')
+  findBanner(@Param('id') id: string) {
+    return this.cmsService.findBannerById(Number(id));
+  }
+
+  @Patch('banners/:id')
+  updateBanner(
+    @Param('id') id: string,
+    @Body() dto: UpdateBannerDto,
+  ) {
+    return this.cmsService.updateBanner(Number(id), dto);
+  }
+
+  @Delete('banners/:id')
+  removeBanner(@Param('id') id: string) {
+    return this.cmsService.removeBanner(Number(id));
+  }
+
+  // ========= CMS PAGES (GENÉRICO POR ÚLTIMO) =========
+
   @Post()
   create(@Body() createCmsDto: CreateCmsDto) {
     return this.cmsService.create(createCmsDto);
@@ -33,40 +70,4 @@ export class CmsController {
   remove(@Param('id') id: string) {
     return this.cmsService.remove(+id);
   }
-
-
- // ============ BANNERS ============
-  @Post('banners')
-  createBanner(@Body() dto: CreateBannerDto) {
-    return this.cmsService.createBanner(dto);
-  }
-
-  @Get('banners')
-  findAllBanners() {
-    return this.cmsService.findAllBanners();
-  }
-
-  @Get('banners/active')
-  findActiveBanners() {
-    return this.cmsService.findActiveBanners();
-  }
-
-  @Get('banners/:id')
-  findBanner(@Param('id') id: string) {
-    return this.cmsService.findBannerById(+id);
-  }
-
-  @Patch('banners/:id')
-  updateBanner(
-    @Param('id') id: string,
-    @Body() dto: UpdateBannerDto,
-  ) {
-    return this.cmsService.updateBanner(+id, dto);
-  }
-
-  @Delete('banners/:id')
-  removeBanner(@Param('id') id: string) {
-    return this.cmsService.removeBanner(+id);
-  }
-
 }
