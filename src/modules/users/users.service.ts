@@ -13,8 +13,30 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.userRepository.create(createUserDto);
-    return await this.userRepository.save(user);
+    const { password, customerId, ...userdata } = createUserDto;
+    const user = this.userRepository.create({
+      ...userdata,
+      passwordHash: password,
+    });
+    
+    // Se customerId foi fornecido, atribuir à relação
+    if (customerId) {
+      user.customer = { id: customerId } as any;
+    }
+    
+    const savedUser = await this.userRepository.save(user);
+    
+    // Retornar o usuário com a relação customer carregada
+    const userWithCustomer = await this.userRepository.findOne({
+      where: { id: savedUser.id },
+      relations: ['customer'],
+    });
+    
+    if (!userWithCustomer) {
+      throw new NotFoundException(`User with ID ${savedUser.id} not found`);
+    }
+    
+    return userWithCustomer;
   }
 
   async findAll(): Promise<User[]> {
