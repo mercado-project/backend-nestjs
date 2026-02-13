@@ -8,6 +8,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { PricesModule } from './modules/prices/prices.module';
 import { ProductsModule } from './modules/products/products.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { SalesModule } from './modules/sales/sales.module';
 import { StockModule } from './modules/stock/stock.module';
 import { UsersModule } from './modules/users/users.module';
 import { CmsModule } from './modules/cms/cms.module';
@@ -38,6 +39,7 @@ import { AuthModule } from './auth/auth.module';
     PricesModule,
     ProductsModule,
     PromotionsModule,
+    SalesModule,
     StockModule,
     UsersModule,
     CmsModule,

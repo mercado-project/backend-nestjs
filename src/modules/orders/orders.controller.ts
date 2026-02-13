@@ -15,7 +15,7 @@ import { CreateOrderItemDto } from './dto/create-order-item.dto';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   /**
    * Cria um novo pedido com seus itens
@@ -42,6 +42,14 @@ export class OrdersController {
   }
 
   /**
+   * Retorna estatísticas de vendas (hoje e mês atual)
+   */
+  @Get('stats')
+  async getStats() {
+    return this.ordersService.getStats();
+  }
+
+  /**
    * Lista pedidos com paginação e busca opcional
    * /orders?page=1&limit=10&search=joao&status=pending
    */
@@ -51,6 +59,8 @@ export class OrdersController {
     @Query('limit') limit = 10,
     @Query('search') search = '',
     @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     // pagination and filtering handled manually in service
     const result = await this.ordersService.findAllWithPagination({
@@ -58,6 +68,8 @@ export class OrdersController {
       limit: +limit,
       search,
       status,
+      startDate,
+      endDate,
     });
     return result;
   }

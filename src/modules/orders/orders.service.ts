@@ -19,6 +19,8 @@ interface PaginationQuery {
   limit: number;
   search?: string;
   status?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 @Injectable()
@@ -41,7 +43,7 @@ export class OrdersService {
 
     @InjectRepository(Price)
     private readonly priceRepository: Repository<Price>,
-  ) {}
+  ) { }
 
   /**
    * Cria um novo pedido e seus itens
@@ -147,13 +149,15 @@ export class OrdersService {
 
 
   /**
-   * Lista pedidos com paginação, busca e filtro por status
+   * Lista pedidos com paginação, busca e filtro por status e data
    */
   async findAllWithPagination({
     page,
     limit,
     search,
     status,
+    startDate,
+    endDate,
   }: PaginationQuery): Promise<{ data: Order[]; total: number }> {
     const qb = this.orderRepository
       .createQueryBuilder('order')
@@ -168,6 +172,18 @@ export class OrdersService {
 
     if (status) {
       qb.andWhere('order.status = :status', { status });
+    }
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      qb.andWhere('order.orderDate >= :startDate', { startDate: start });
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      qb.andWhere('order.orderDate <= :endDate', { endDate: end });
     }
 
     qb.skip((page - 1) * limit)
@@ -198,7 +214,7 @@ export class OrdersService {
    */
   async updateStatus(id: number, status: string): Promise<Order> {
     const order = await this.findOne(id);
-    
+
     // Valida se o status é válido
     const validStatuses = ['pending', 'paid', 'shipped', 'delivered', 'canceled'];
     if (!validStatuses.includes(status)) {
@@ -260,4 +276,41 @@ export class OrdersService {
     return orders;
   }
 
+  async getStats() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // Vendas de hoje
+    const todaySales = await this.orderRepository
+      .createQueryBuilder('order')
+      .where('order.status = :status', { status: 'paid' })
+      .andWhere('order.orderDate >= :today', { today })
+      .select('COUNT(order.id)', 'count')
+      .addSelect('SUM(order.totalAmount)', 'total')
+      .getRawOne();
+
+    // Vendas do mês
+    const monthSales = await this.orderRepository
+      .createQueryBuilder('order')
+      .where('order.status = :status', { status: 'paid' })
+      .andWhere('order.orderDate >= :firstDayOfMonth', { firstDayOfMonth })
+      .select('COUNT(order.id)', 'count')
+      .addSelect('SUM(order.totalAmount)', 'total')
+      .getRawOne();
+
+    return {
+      today: {
+        count: Number(todaySales.count || 0),
+        total: Number(todaySales.total || 0),
+      },
+      month: {
+        count: Number(monthSales.count || 0),
+        total: Number(monthSales.total || 0),
+      },
+    };
+  }
 }
+
+
